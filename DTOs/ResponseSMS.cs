@@ -2,7 +2,7 @@
 {
     public class ResponseSMS
     {
-        public bool IsSuccess { get; set; }
+        public bool IsSuccess { get; set; } = false;
         public int ResCode { get; set; }
         public string Error { get; set; }
         public Result Result { get; set; }

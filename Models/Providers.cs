@@ -9,9 +9,20 @@
             SendPatternUrl = sendPatternUrl;
             ProvidesType = providesType;
         }
-        public readonly static Providers Farapayamak = new Providers("https://farapayamak.ir/", "https://rest.payamak-panel.com/api/SendSMS/SendSMS", "https://rest.payamak-panel.com/api/SendSMS/BaseServiceNumber", ProvidesType.farapayamak);
-        public readonly static Providers IpPanel = new Providers("https://ippanel.co/", "https://ippanel.com/services.jspd", "http://sms.rangine.ir/patterns/pattern?", ProvidesType.ippanel);
-        public readonly static Providers AllSmsSend = new Providers("https://rest.payamak-panel.com/api/SendSMS/SendSMS", "http://sms.rangine.ir/patterns/pattern?", "", ProvidesType.allsmssend);
+        public readonly static Providers Farapayamak = new Providers("https://farapayamak.ir/",
+            "https://rest.payamak-panel.com/api/SendSMS/SendSMS",
+            "https://api.payamak-panel.com/post/Send.asmx/SendByBaseNumber2",
+            ProvidesType.farapayamak);
+
+        public readonly static Providers IpPanel = new Providers("https://ippanel.com/",
+            "https://ippanel.com/services.jspd",
+            "http://sms.rangine.ir/patterns/pattern?",
+            ProvidesType.ippanel);
+
+        public readonly static Providers AllSmsSend = new Providers("https://allsmssend.ir/",
+            "https://allsmssend.ir/api/SendSMS/SendSMS",
+            "https://allsmssend.ir/api/SendSMS/SendSMS",
+            ProvidesType.allsmssend);
         public string Website { get; set; }
         public string SendUrl { get; set; }
         public string SendPatternUrl { get; set; }

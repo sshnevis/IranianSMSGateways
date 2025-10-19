@@ -53,6 +53,11 @@ namespace IranianSMSGateways.Services.IRepositories
             return responseSMS;
         }
 
+        /// <summary>
+        /// text =>   "first","second","toSort" 
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         public async Task<ResponseSMS> SendSmsByPatternAsync(SendSmsByPatternDTO dto)
         {
             ResponseSMS responseSMS = new ResponseSMS();
@@ -61,7 +66,7 @@ namespace IranianSMSGateways.Services.IRepositories
                 Providers providers = Providers.Farapayamak;
                 var url = providers.SendPatternUrl;
 
-                var data = $"username={dto.UserName}&password={dto.Password}&to={dto.To}text={dto.Text}&bodyId={dto.BodyId}";
+                var data = $"username={dto.UserName}&password={dto.Password}&to={dto.To}&text={dto.Text}&bodyId={dto.BodyId}";
 
                 using var client = new HttpClient();
 
@@ -74,15 +79,25 @@ namespace IranianSMSGateways.Services.IRepositories
                 var response = await client.SendAsync(request);
                 var responseString = await response.Content.ReadAsStringAsync();
                 var responseData = JsonConvert.DeserializeObject<ApiResponseFaraPayamak>(responseString);
-                responseSMS.IsSuccess = true;
-                Result result = new Result()
+                if (responseData != null)
                 {
-                    Code = responseData.RetStatus.ToString(),
-                    Data = responseData.Value,
-                    Message = responseData.StrRetStatus
-                };
-                responseSMS.ResCode = 200;
-                responseSMS.Result = result;
+                    if (responseData.Value == "1")
+                    {
+                        responseSMS.IsSuccess = true;
+                    }
+                    Result result = new Result()
+                    {
+                        Code = responseData.RetStatus.ToString(),
+                        Data = responseData.Value,
+                        Message = responseData.StrRetStatus
+                    };
+                    if (string.IsNullOrEmpty(result.Message))
+                    {
+                        result.Message = responseString;
+                    }
+                    responseSMS.ResCode = 200;
+                    responseSMS.Result = result;
+                }
             }
             catch (Exception ex)
             {

@@ -37,14 +37,31 @@ namespace IranianSMSGateways.Services.IRepositories
                 var responseString = await response.Content.ReadAsStringAsync();
 
                 var responseData = JsonConvert.DeserializeJsonArray(responseString);
-                responseSMS.IsSuccess = true;
-                Result result = new Result()
+                if (responseData != null)
                 {
-                    Code = responseData?[0],
-                    Message = responseData?[1]
-                };
-                responseSMS.ResCode = 200;
-                responseSMS.Result = result;
+                    if (responseData[0] == "0")
+                    {
+                        responseSMS.IsSuccess = true;
+                        Result result = new Result()
+                        {
+                            Code = responseData?[0],
+                            Message = responseData?[1]
+                        };
+                        responseSMS.ResCode = 200;
+                        responseSMS.Result = result;
+                    }
+                    else
+                    {
+                        responseSMS.IsSuccess = false;
+                        Result result = new Result()
+                        {
+                            Code = responseData?[0],
+                            Message = responseData?[1]
+                        };
+                        responseSMS.ResCode = 200;
+                        responseSMS.Result = result;
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -55,6 +72,11 @@ namespace IranianSMSGateways.Services.IRepositories
             return responseSMS;
         }
 
+        /// <summary>
+        /// text => { "name": "sina" , "lastname": "shiri" }
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         public async Task<ResponseSMS> SendSmsByPatternAsync(SendSmsByPatternDTO dto)
         {
             ResponseSMS responseSMS = new ResponseSMS();
@@ -67,12 +89,12 @@ namespace IranianSMSGateways.Services.IRepositories
                     $"input_data={dto.Text}&pattern_code={dto.BodyId}";
 
                 var responseString = await client.GetAsync(url).Result.Content.ReadAsStringAsync();
-                var responseData = JsonConvert.DeserializeJsonArray(responseString);
+                var responseData = responseString;
                 responseSMS.IsSuccess = true;
                 Result result = new Result()
                 {
-                    Code = responseData?[0],
-                    Message = responseData?[1]
+                    Code = "1",
+                    Message = "Sent"
                 };
                 responseSMS.ResCode = 200;
                 responseSMS.Result = result;
