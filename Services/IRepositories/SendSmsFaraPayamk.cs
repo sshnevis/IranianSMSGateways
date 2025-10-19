@@ -2,9 +2,11 @@
 using IranianSMSGateways.DTOs;
 using IranianSMSGateways.Models;
 using System;
+using System.Data.SqlTypes;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace IranianSMSGateways.Services.IRepositories
 {
@@ -54,7 +56,7 @@ namespace IranianSMSGateways.Services.IRepositories
         }
 
         /// <summary>
-        /// text =>   "first","second","toSort" 
+        /// text =>   sina;shiri;20;
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
@@ -78,31 +80,41 @@ namespace IranianSMSGateways.Services.IRepositories
                 request.Headers.Add("cache-control", "no-cache");
                 var response = await client.SendAsync(request);
                 var responseString = await response.Content.ReadAsStringAsync();
-                var responseData = JsonConvert.DeserializeObject<ApiResponseFaraPayamak>(responseString);
-                if (responseData != null)
+                if (!string.IsNullOrEmpty(responseString))
                 {
-                    if (responseData.Value == "1")
+                    Result result = new Result();
+
+                    XmlDocument xmlDoc = new XmlDocument();
+                    xmlDoc.LoadXml(responseString);
+
+                    string numberString = xmlDoc.GetElementsByTagName("string")[0].InnerText;
+
+                    // حالا می‌تونی به long تبدیل کنی (چون عدد بزرگه)
+                    if (long.TryParse(numberString, out long number))
                     {
-                        responseSMS.IsSuccess = true;
+                        if (number > 1000)
+                        {
+                            result.Code = numberString;
+                            responseSMS.IsSuccess = true;
+                            responseSMS.ResCode = 200;
+                            responseSMS.Result = result;
+                        }
                     }
-                    Result result = new Result()
-                    {
-                        Code = responseData.RetStatus.ToString(),
-                        Data = responseData.Value,
-                        Message = responseData.StrRetStatus
-                    };
-                    if (string.IsNullOrEmpty(result.Message))
+                    else
                     {
                         result.Message = responseString;
+
+                        responseSMS.IsSuccess = false;
+                        responseSMS.Error = $"Error: عدم پاسخ مناسب";
+                        responseSMS.ResCode = 350;
+                        responseSMS.Result = result;
                     }
-                    responseSMS.ResCode = 200;
-                    responseSMS.Result = result;
                 }
             }
             catch (Exception ex)
             {
-                responseSMS.Error = $"Error: {ex.Message}";
                 responseSMS.IsSuccess = false;
+                responseSMS.Error = $"Error: {ex.Message}";
                 responseSMS.ResCode = 500;
             }
             return responseSMS;
