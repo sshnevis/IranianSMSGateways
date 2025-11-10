@@ -3,6 +3,7 @@ using IranianSMSGateways.DTOs;
 using IranianSMSGateways.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -88,7 +89,25 @@ namespace IranianSMSGateways.Services.IRepositories
                     $"username={dto.UserName}&password={dto.Password}&from={dto.From}&to=[\"{dto.To}\"]&" +
                     $"input_data={dto.Text}&pattern_code={dto.BodyId}";
 
-                var responseString = await client.GetAsync(url).Result.Content.ReadAsStringAsync();
+                string baseUrl = "http://sms.rangine.ir/patterns/pattern";
+
+                // ساخت کوئری با انکودینگ هر پارامتر
+                var queryParams = new System.Collections.Generic.Dictionary<string, string>
+                {
+                    { "username", dto.UserName },
+                    { "password", dto.Password },
+                    { "from", dto.From },
+                    { "to", $"[\"{dto.To}\"]" }, // اضافه کردن براکت و نقل قول
+                    { "input_data", dto.Text }, // JSON را مستقیم پاس می‌دهیم
+                    { "pattern_code", dto.BodyId }
+                };
+
+                // انکودینگ کوئری
+                string queryString = string.Join("&", queryParams.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"));
+
+                string fullUrl = $"{baseUrl}?{queryString}";
+
+                var responseString = await client.GetAsync(fullUrl).Result.Content.ReadAsStringAsync();//url=ghadim
                 var responseData = responseString;
                 responseSMS.IsSuccess = true;
                 Result result = new Result()
