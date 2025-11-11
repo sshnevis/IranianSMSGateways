@@ -35,9 +35,30 @@ namespace IranianSMSGateways.Services.IRepositories
             return responseSMS;
         }
 
-        public async Task<ResponseSMS> SendSmsByPatternAsync(SendSmsByPatternDTO dto)
+        public async Task<ResponseSMS> SendSmsByPatternAsync(SendSmsByPatternDTO allSmsSend)
         {
-            throw new System.NotImplementedException();
+            ResponseSMS responseSMS = new ResponseSMS();
+            try
+            {
+                using var client = new HttpClient();
+                string url = "https://allsmssend.ir/api/apicore/SendIPPanel";
+
+                var json = JsonConvert.SerializeObject(allSmsSend);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync(url, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseString = await response.Content.ReadAsStringAsync();
+                    var responseData = JsonConvert.DeserializeJsonArray(responseString);
+                    var res_code = responseData?[0];
+                    var res_data = responseData?[1];
+                }
+
+            }
+            catch (Exception ex) { }
+            return responseSMS;
         }
     }
 }
