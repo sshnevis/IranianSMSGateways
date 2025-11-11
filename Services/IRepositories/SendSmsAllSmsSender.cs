@@ -31,7 +31,10 @@ namespace IranianSMSGateways.Services.IRepositories
                 }
 
             }
-            catch (Exception ex) { }
+            catch (Exception ex)
+            {
+                responseSMS.Error = ex.Message;
+            }
             return responseSMS;
         }
 
@@ -57,7 +60,10 @@ namespace IranianSMSGateways.Services.IRepositories
                 }
 
             }
-            catch (Exception ex) { }
+            catch (Exception ex)
+            {
+                responseSMS.Error = ex.Message;
+            }
             return responseSMS;
         }
     }
