@@ -36,11 +36,16 @@ namespace IranianSMSGateways.Services.IRepositories
                 var response = await client.PostAsync(url, content);
                 var responseString = await response.Content.ReadAsStringAsync();
                 var responseData = JsonConvert.DeserializeObject<ApiResponseFaraPayamak>(responseString);
-                responseSMS.IsSuccess = true;
+
+                if (responseData.RetStatus == 1)
+                {
+                    responseSMS.IsSuccess = true;
+                }
+
                 Result result = new Result()
                 {
-                    Code = responseData.RetStatus.ToString(),
-                    Data = responseData.Value,
+                    Code = responseData.Value,
+                    Data = responseData.RetStatus.ToString(),
                     Message = responseData.StrRetStatus
                 };
                 responseSMS.ResCode = 200;
