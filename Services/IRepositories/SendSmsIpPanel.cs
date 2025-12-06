@@ -17,7 +17,7 @@ namespace IranianSMSGateways.Services.IRepositories
             Providers providers = Providers.IpPanel;
             try
             {
-                string url = providers.SendUrl;
+                string url = providers.URL_Send;
 
                 var rcpt_nm = new List<string> { ipPanel.To };
                 ipPanel.Text = BadWords.CheckJomle(ipPanel.Text);
@@ -85,7 +85,7 @@ namespace IranianSMSGateways.Services.IRepositories
             try
             {
                 HttpClient client = new HttpClient();
-                string url = providers.SendPatternUrl +
+                string url = providers.URL_SendPattern +
                     $"username={dto.UserName}&password={dto.Password}&from={dto.From}&to=[\"{dto.To}\"]&" +
                     $"input_data={dto.Text}&pattern_code={dto.BodyId}";
 

@@ -20,7 +20,7 @@ namespace IranianSMSGateways.Services.IRepositories
                 farapayamak.Text = BadWords.CheckJomle(farapayamak.Text);
                 using var client = new HttpClient();
                 Providers providers = Providers.Farapayamak;
-                string url = providers.SendUrl;
+                string url = providers.URL_Send;
                 var sendObj = new
                 {
                     userName = farapayamak.UserName,
@@ -71,7 +71,7 @@ namespace IranianSMSGateways.Services.IRepositories
             try
             {
                 Providers providers = Providers.Farapayamak;
-                var url = providers.SendPatternUrl;
+                var url = providers.URL_SendPattern;
 
                 var data = $"username={dto.UserName}&password={dto.Password}&to={dto.To}&text={dto.Text}&bodyId={dto.BodyId}";
 

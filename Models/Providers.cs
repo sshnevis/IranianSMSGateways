@@ -2,11 +2,20 @@
 {
     public class Providers
     {
+        public string Website { get; set; }
+        public string URL_GetCreadit { get; set; }
+        public string URL_Send { get; set; }
+        public string URL_SendMutiple { get; set; }
+        public string URL_SendPattern { get; set; }
+        public string URL_SendSchedule { get; set; }
+        public ProvidesType ProvidesType { get; set; }
+
+
         public Providers(string website, string sendUrl, string sendPatternUrl, ProvidesType providesType)
         {
             Website = website;
-            SendUrl = sendUrl;
-            SendPatternUrl = sendPatternUrl;
+            URL_Send = sendUrl;
+            URL_SendPattern = sendPatternUrl;
             ProvidesType = providesType;
         }
         public readonly static Providers Farapayamak = new Providers("https://farapayamak.ir/",
@@ -23,11 +32,6 @@
             "https://allsmssend.ir/api/SendSMS/SendSMS",
             "https://allsmssend.ir/api/SendSMS/SendSMS",
             ProvidesType.allsmssend);
-        public string Website { get; set; }
-        public string SendUrl { get; set; }
-        public string SendPatternUrl { get; set; }
-        public string PatternUri { get; set; }
-        public ProvidesType ProvidesType { get; set; }
     }
 
     public enum ProvidesType
