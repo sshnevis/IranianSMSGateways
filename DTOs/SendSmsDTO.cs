@@ -28,6 +28,7 @@ namespace IranianSMSGateways.DTOs
     {
         public string UserName { get; set; }
         public string Password { get; set; }
+        public ProvidesType ProvidesType { get; set; }
     }
     public class SendScheduleDTO
     {
@@ -38,6 +39,7 @@ namespace IranianSMSGateways.DTOs
         public string Text { get; set; }
         public DateTime ScheduleDate { get; set; }
         public int Period { get; set; }
+        public ProvidesType ProvidesType { get; set; }
     }
     public class SendMultipleDTO
     {
@@ -46,5 +48,6 @@ namespace IranianSMSGateways.DTOs
         public List<string> To { get; set; }
         public string From { get; set; }
         public List<string> Text { get; set; }
+        public ProvidesType ProvidesType { get; set; }
     }
 }

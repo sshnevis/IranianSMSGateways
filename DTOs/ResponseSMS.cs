@@ -12,6 +12,7 @@
         public string Data { get; set; }
         public string? Code { get; set; }
         public string Message { get; set; }
+        public string ResultData { get; set; }
     }
 
 }

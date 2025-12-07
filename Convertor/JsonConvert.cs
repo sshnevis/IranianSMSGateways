@@ -22,11 +22,28 @@ namespace IranianSMSGateways.Convertor
                     : value is bool
                         ? value.ToString().ToLower()
                         : value?.ToString();
+                //jsonValue = JsonEscape(jsonValue);
+
+
+                //string JsonEscape(string s) =>
+                //    s.Replace("\\", "\\\\")
+                //     .Replace("\"", "\\\"")
+                //     .Replace("\n", "\\n")
+                //     .Replace("\r", "\\r");
 
                 jsonParts.Add($"\"{name}\":{jsonValue}");
             }
 
             return "{" + string.Join(",", jsonParts) + "}";
+        }
+
+
+        public static string JsonEscape(string s)
+        {
+            return s.Replace("\\", "\\\\")
+             .Replace("\"", "\\\"")
+             .Replace("\n", "\\n")
+             .Replace("\r", "\\r");
         }
 
         public static string ListToJson(List<string> items)

@@ -27,7 +27,7 @@ namespace IranianSMSGateways.Services.IRepositories
 
                 var sendObj = new
                 {
-                    username = dto.UserName, 
+                    username = dto.UserName,
                     password = dto.Password
                 };
 
@@ -50,7 +50,7 @@ namespace IranianSMSGateways.Services.IRepositories
 
                 Result result = new Result()
                 {
-                    Code = responseData?.Value, 
+                    Code = responseData?.Value,
                     Data = responseData?.RetStatus.ToString(),
                     Message = responseData?.StrRetStatus
                 };
@@ -99,13 +99,107 @@ namespace IranianSMSGateways.Services.IRepositories
                 cleanedTexts = cleanedTexts.Take(100).ToList();
 
                 // ۳) ساخت Body درخواست
-                var sendObj = new
+                var sendObj = new SmsMultipleRequestDto
                 {
                     username = dto.UserName,
                     password = dto.Password,
                     from = dto.From,
-                    to = cleanedNumbers.ToArray(),     
-                    text = cleanedTexts.ToArray()       
+                    to = cleanedNumbers,
+                    text = cleanedTexts
+                };
+
+                string toJson = string.Join(",", cleanedNumbers.Select(n => $"\"{n}\""));
+                string textJson = string.Join(",", cleanedTexts.Select(t => $"\"{JsonConvert.JsonEscape(t)}\""));
+
+                string json = $@"{{
+    ""username"":""{dto.UserName}"",
+    ""password"":""{dto.Password}"",
+    ""from"":""{dto.From}"",
+    ""to"":[{toJson}],
+    ""text"":[{textJson}]
+}}";
+
+                //var json = JsonConvert.SerializeObject(sendObj);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync(url, content);
+                var responseString = await response.Content.ReadAsStringAsync();
+
+                var responseData = JsonConvert.DeserializeObject<ApiResponseFaraPayamak>(responseString);
+
+                if (responseData != null && responseData.ReqStatus == 1)
+                {
+                    responseSMS.IsSuccess = true;
+                }
+                else
+                {
+                    responseSMS.IsSuccess = false;
+                }
+
+                Result result = new Result()
+                {
+                    Code = responseData?.Value,
+                    Data = responseData?.ReqStatus.ToString(),
+                    Message = responseData?.StrRetStatus
+                };
+
+                responseSMS.ResCode = (int)response.StatusCode;
+                if (responseSMS.ResCode != 200)
+                {
+                    responseSMS.Error = responseString;
+                }
+
+                responseSMS.Result = result;
+                responseSMS.Result.ResultData = responseString;
+            }
+            catch (Exception ex)
+            {
+                responseSMS.Error = $"Error: {ex.Message}";
+                responseSMS.IsSuccess = false;
+                responseSMS.ResCode = 500;
+            }
+
+            return responseSMS;
+
+
+
+        }
+        public class SmsMultipleRequestDto
+        {
+            public string username { get; set; }
+            public string password { get; set; }
+            public string from { get; set; }
+            public List<string> to { get; set; }
+            public List<string> text { get; set; }
+        }
+
+        public async Task<ResponseSMS> SendSchedule(SendScheduleDTO dto)
+        {
+            ResponseSMS responseSMS = new ResponseSMS();
+
+            try
+            {
+                using var client = new HttpClient();
+                Providers providers = Providers.Farapayamak;
+
+                string url = providers.URL_SendSchedule;
+
+                dto.Text = BadWords.CheckJomle(dto.Text);
+
+                string cleanedTo = dto.To?.Trim();
+
+                string scheduleDateString = dto.ScheduleDate
+                    .ToString("yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+
+                var sendObj = new
+                {
+                    username = dto.UserName,
+                    password = dto.Password,
+                    to = cleanedTo,
+                    from = dto.From,
+                    text = JsonConvert.JsonEscape(dto.Text),
+                    scheduleDate = scheduleDateString,
+                    period = dto.Period
                 };
 
                 var json = JsonConvert.SerializeObject(sendObj);
@@ -143,78 +237,9 @@ namespace IranianSMSGateways.Services.IRepositories
             }
 
             return responseSMS;
-        
-
-
         }
 
-        public async Task<ResponseSMS> SendSchedule(SendScheduleDTO dto)
-        {
-            ResponseSMS responseSMS = new ResponseSMS();
 
-            try
-            {
-                using var client = new HttpClient();
-                Providers providers = Providers.Farapayamak;
-
-                string url = providers.URL_SendSchedule;
-
-                dto.Text = BadWords.CheckJomle(dto.Text);
-
-                string cleanedTo = dto.To?.Trim();
-
-                string scheduleDateString = dto.ScheduleDate
-                    .ToString("yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
-
-                var sendObj = new
-                {
-                    username = dto.UserName,
-                    password = dto.Password,
-                    to = cleanedTo,              
-                    from = dto.From,
-                    text = dto.Text,
-                    scheduleDate = scheduleDateString,
-                    period = dto.Period     
-                };
-
-                var json = JsonConvert.SerializeObject(sendObj);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var response = await client.PostAsync(url, content);
-                var responseString = await response.Content.ReadAsStringAsync();
-
-                var responseData = JsonConvert.DeserializeObject<ApiResponseFaraPayamak>(responseString);
-
-                if (responseData != null && responseData.RetStatus == 1)
-                {
-                    responseSMS.IsSuccess = true;
-                }
-                else
-                {
-                    responseSMS.IsSuccess = false;
-                }
-
-                Result result = new Result()
-                {
-                    Code = responseData?.Value,               
-                    Data = responseData?.RetStatus.ToString(),
-                    Message = responseData?.StrRetStatus
-                };
-
-                responseSMS.ResCode = (int)response.StatusCode;
-                responseSMS.Result = result;
-            }
-            catch (Exception ex)
-            {
-                responseSMS.Error = $"Error: {ex.Message}";
-                responseSMS.IsSuccess = false;
-                responseSMS.ResCode = 500;
-            }
-
-            return responseSMS;
-        }
-
-        
 
         public async Task<ResponseSMS> SendSmsAsync(SendSmsDTO farapayamak)
         {
@@ -223,13 +248,14 @@ namespace IranianSMSGateways.Services.IRepositories
             {
                 farapayamak.Text = BadWords.CheckJomle(farapayamak.Text);
                 using var client = new HttpClient();
+                client.Timeout = TimeSpan.FromSeconds(7);
                 Providers providers = Providers.Farapayamak;
                 string url = providers.URL_Send;
                 var sendObj = new
                 {
                     userName = farapayamak.UserName,
                     password = farapayamak.Password,
-                    text = farapayamak.Text,
+                    text = JsonConvert.JsonEscape(farapayamak.Text),
                     to = farapayamak.To,
                     from = farapayamak.From,
                     isFlash = false,
@@ -334,6 +360,7 @@ namespace IranianSMSGateways.Services.IRepositories
     {
         public string Value { get; set; }
         public int RetStatus { get; set; }
+        public int ReqStatus { get; set; }
         public string StrRetStatus { get; set; }
     }
 
