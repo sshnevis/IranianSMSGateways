@@ -2,7 +2,9 @@
 using IranianSMSGateways.DTOs;
 using IranianSMSGateways.Models;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlTypes;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +14,208 @@ namespace IranianSMSGateways.Services.IRepositories
 {
     public class SendSmsFaraPayamk : ISendSms
     {
+        public async Task<ResponseSMS> GetCredit(GetCreditDTO dto)
+        {
+            ResponseSMS responseSMS = new ResponseSMS();
+
+            try
+            {
+                using var client = new HttpClient();
+                Providers providers = Providers.Farapayamak;
+
+                string url = providers.URL_GetCreadit;
+
+                var sendObj = new
+                {
+                    username = dto.UserName, 
+                    password = dto.Password
+                };
+
+                var json = JsonConvert.SerializeObject(sendObj);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync(url, content);
+                var responseString = await response.Content.ReadAsStringAsync();
+
+                var responseData = JsonConvert.DeserializeObject<ApiResponseFaraPayamak>(responseString);
+
+                if (responseData != null && responseData.RetStatus == 1)
+                {
+                    responseSMS.IsSuccess = true;
+                }
+                else
+                {
+                    responseSMS.IsSuccess = false;
+                }
+
+                Result result = new Result()
+                {
+                    Code = responseData?.Value, 
+                    Data = responseData?.RetStatus.ToString(),
+                    Message = responseData?.StrRetStatus
+                };
+
+                responseSMS.ResCode = (int)response.StatusCode;
+                responseSMS.Result = result;
+            }
+            catch (Exception ex)
+            {
+                responseSMS.Error = $"Error: {ex.Message}";
+                responseSMS.IsSuccess = false;
+                responseSMS.ResCode = 500;
+            }
+
+            return responseSMS;
+        }
+
+        public async Task<ResponseSMS> SendMultiple(SendMultipleDTO dto)
+        {
+            var responseSMS = new ResponseSMS();
+
+            try
+            {
+                using var client = new HttpClient();
+                Providers providers = Providers.Farapayamak;
+
+                string url = providers.URL_SendMutiple;
+
+                var cleanedTexts = new List<string>();
+                foreach (var txt in dto.Text)
+                {
+                    if (string.IsNullOrWhiteSpace(txt)) continue;
+                    cleanedTexts.Add(BadWords.CheckJomle(txt));
+                }
+                var cleanedNumbers = new List<string>();
+                foreach (var mobile in dto.To)
+                {
+                    if (string.IsNullOrWhiteSpace(mobile)) continue;
+
+                    string cleaned = mobile.Trim();
+                    cleanedNumbers.Add(cleaned);
+                }
+
+                // محدودیت 100 مورد طبق داک
+                cleanedNumbers = cleanedNumbers.Take(100).ToList();
+                cleanedTexts = cleanedTexts.Take(100).ToList();
+
+                // ۳) ساخت Body درخواست
+                var sendObj = new
+                {
+                    username = dto.UserName,
+                    password = dto.Password,
+                    from = dto.From,
+                    to = cleanedNumbers.ToArray(),     
+                    text = cleanedTexts.ToArray()       
+                };
+
+                var json = JsonConvert.SerializeObject(sendObj);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync(url, content);
+                var responseString = await response.Content.ReadAsStringAsync();
+
+                var responseData = JsonConvert.DeserializeObject<ApiResponseFaraPayamak>(responseString);
+
+                if (responseData != null && responseData.RetStatus == 1)
+                {
+                    responseSMS.IsSuccess = true;
+                }
+                else
+                {
+                    responseSMS.IsSuccess = false;
+                }
+
+                Result result = new Result()
+                {
+                    Code = responseData?.Value,
+                    Data = responseData?.RetStatus.ToString(),
+                    Message = responseData?.StrRetStatus
+                };
+
+                responseSMS.ResCode = (int)response.StatusCode;
+                responseSMS.Result = result;
+            }
+            catch (Exception ex)
+            {
+                responseSMS.Error = $"Error: {ex.Message}";
+                responseSMS.IsSuccess = false;
+                responseSMS.ResCode = 500;
+            }
+
+            return responseSMS;
+        
+
+
+        }
+
+        public async Task<ResponseSMS> SendSchedule(SendScheduleDTO dto)
+        {
+            ResponseSMS responseSMS = new ResponseSMS();
+
+            try
+            {
+                using var client = new HttpClient();
+                Providers providers = Providers.Farapayamak;
+
+                string url = providers.URL_SendSchedule;
+
+                dto.Text = BadWords.CheckJomle(dto.Text);
+
+                string cleanedTo = dto.To?.Trim();
+
+                string scheduleDateString = dto.ScheduleDate
+                    .ToString("yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+
+                var sendObj = new
+                {
+                    username = dto.UserName,
+                    password = dto.Password,
+                    to = cleanedTo,              
+                    from = dto.From,
+                    text = dto.Text,
+                    scheduleDate = scheduleDateString,
+                    period = dto.Period     
+                };
+
+                var json = JsonConvert.SerializeObject(sendObj);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync(url, content);
+                var responseString = await response.Content.ReadAsStringAsync();
+
+                var responseData = JsonConvert.DeserializeObject<ApiResponseFaraPayamak>(responseString);
+
+                if (responseData != null && responseData.RetStatus == 1)
+                {
+                    responseSMS.IsSuccess = true;
+                }
+                else
+                {
+                    responseSMS.IsSuccess = false;
+                }
+
+                Result result = new Result()
+                {
+                    Code = responseData?.Value,               
+                    Data = responseData?.RetStatus.ToString(),
+                    Message = responseData?.StrRetStatus
+                };
+
+                responseSMS.ResCode = (int)response.StatusCode;
+                responseSMS.Result = result;
+            }
+            catch (Exception ex)
+            {
+                responseSMS.Error = $"Error: {ex.Message}";
+                responseSMS.IsSuccess = false;
+                responseSMS.ResCode = 500;
+            }
+
+            return responseSMS;
+        }
+
+        
+
         public async Task<ResponseSMS> SendSmsAsync(SendSmsDTO farapayamak)
         {
             ResponseSMS responseSMS = new ResponseSMS();

@@ -11,6 +11,21 @@ namespace IranianSMSGateways.Services.IRepositories
 {
     public class SendSmsIpPanel : ISendSms
     {
+        public async Task<ResponseSMS> GetCredit(GetCreditDTO dto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<ResponseSMS> SendMultiple(SendMultipleDTO dto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<ResponseSMS> SendSchedule(SendScheduleDTO dto)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<ResponseSMS> SendSmsAsync(SendSmsDTO ipPanel)
         {
             ResponseSMS responseSMS = new ResponseSMS();
