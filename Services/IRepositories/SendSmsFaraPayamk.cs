@@ -34,6 +34,7 @@ namespace IranianSMSGateways.Services.IRepositories
                 var json = JsonConvert.SerializeObject(sendObj);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
+                //Logging.LogFile("logSMS.txt", json);
                 var response = await client.PostAsync(url, content);
                 var responseString = await response.Content.ReadAsStringAsync();
 
