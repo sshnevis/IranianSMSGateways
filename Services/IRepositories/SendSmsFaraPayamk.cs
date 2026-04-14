@@ -14,6 +14,72 @@ namespace IranianSMSGateways.Services.IRepositories
 {
     public class SendSmsFaraPayamk : ISendSms
     {
+        public async Task<ResponseSMS> GetUserNumbers(GetUserNumbersDTO dto)
+        {
+            ResponseSMS responseSMS = new ResponseSMS();
+
+            try
+            {
+                using var client = new HttpClient();
+                Providers providers = Providers.Farapayamak;
+
+                string url = "https://rest.payamak-panel.com/api/SendSMS/GetUserNumbers";
+
+                var sendObj = new
+                {
+                    username = dto.UserName,
+                    password = dto.Password
+                };
+
+                var json = JsonConvert.SerializeObject(sendObj);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync(url, content);
+                var responseString = await response.Content.ReadAsStringAsync();
+
+
+                var responseData = JsonConvert2.DeserializeObject<ApiResponseGetUserNumbers>(responseString);
+
+                if (responseData != null && responseData.MyBase != null)
+                {
+                    if (responseData.MyBase.RetStatus == 1)
+                    {
+                        responseSMS.IsSuccess = true;
+                    }
+                    else
+                    {
+                        responseSMS.IsSuccess = false;
+                        responseSMS.Error = responseData.MyBase.StrRetStatus;
+                    }
+                }
+                else
+                {
+                    responseSMS.IsSuccess = false;
+                    responseSMS.Error = $"Error: NULL";
+                }
+
+                Result result = new Result()
+                {
+                    Code = responseData?.MyBase?.Value,
+                    Data = responseData?.MyBase?.RetStatus.ToString(),
+                    Message = responseData?.MyBase?.StrRetStatus,
+                    ResultData = JsonConvert2.SerializeObject(responseData?.Data)
+                };
+
+                responseSMS.ResCode = (int)response.StatusCode;
+                responseSMS.Result = result;
+            }
+            catch (Exception ex)
+            {
+                responseSMS.Error = $"Error: {ex.Message}";
+                responseSMS.IsSuccess = false;
+                responseSMS.ResCode = 500;
+            }
+
+            return responseSMS;
+        }
+
+
         public async Task<ResponseSMS> GetCredit(GetCreditDTO dto)
         {
             ResponseSMS responseSMS = new ResponseSMS();
@@ -40,13 +106,22 @@ namespace IranianSMSGateways.Services.IRepositories
 
                 var responseData = JsonConvert.DeserializeObject<ApiResponseFaraPayamak>(responseString);
 
-                if (responseData != null && responseData.RetStatus == 1)
+                if (responseData != null)
                 {
-                    responseSMS.IsSuccess = true;
+                    if (responseData.RetStatus == 1)
+                    {
+                        responseSMS.IsSuccess = true;
+                    }
+                    else
+                    {
+                        responseSMS.IsSuccess = false;
+                        responseSMS.Error = responseData.StrRetStatus;
+                    }
                 }
                 else
                 {
                     responseSMS.IsSuccess = false;
+                    responseSMS.Error = $"Error: NULL";
                 }
 
                 Result result = new Result()
@@ -365,4 +440,15 @@ namespace IranianSMSGateways.Services.IRepositories
         public string StrRetStatus { get; set; }
     }
 
+
+    public class ApiResponseGetUserNumbers
+    {
+        public ApiResponseFaraPayamak MyBase { get; set; }
+        public List<GetUserNumberItem> Data { get; set; }
+    }
+
+    public class GetUserNumberItem
+    {
+        public string Number { get; set; }
+    }
 }

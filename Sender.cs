@@ -28,6 +28,29 @@ namespace IranianSMSGateways
             }
             return response;
         }
+
+        public async Task<ResponseSMS> GetUserNumbersAsync(GetUserNumbersDTO getUserNumbersDTO)
+        {
+            ResponseSMS response = new ResponseSMS();
+
+            if (getUserNumbersDTO.ProvidesType == ProvidesType.farapayamak)
+            {
+                SendSmsFaraPayamk sendSmsFaraPayamk = new SendSmsFaraPayamk();
+                response = await sendSmsFaraPayamk.GetUserNumbers(getUserNumbersDTO);
+            }
+            else if (getUserNumbersDTO.ProvidesType == ProvidesType.allsmssend)
+            {
+                SendSmsAllSmsSender sendSmsAllSmsSender = new SendSmsAllSmsSender();
+                response = await sendSmsAllSmsSender.GetUserNumbers(getUserNumbersDTO);
+            }
+            else if (getUserNumbersDTO.ProvidesType == ProvidesType.ippanel)
+            {
+                SendSmsIpPanel sendSmsIpPanel = new SendSmsIpPanel();
+                response = await sendSmsIpPanel.GetUserNumbers(getUserNumbersDTO);
+            }
+            return response;
+        }
+
         public async Task<ResponseSMS> SendScheduleAsync(SendScheduleDTO sendScheduleDTO)
         {
             ResponseSMS response = new ResponseSMS();

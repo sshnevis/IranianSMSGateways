@@ -11,6 +11,11 @@ namespace IranianSMSGateways.Services.IRepositories
 {
     public class SendSmsIpPanel : ISendSms
     {
+        public async Task<ResponseSMS> GetUserNumbers(GetUserNumbersDTO dto)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<ResponseSMS> GetCredit(GetCreditDTO dto)
         {
             throw new NotImplementedException();

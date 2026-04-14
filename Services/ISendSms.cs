@@ -10,5 +10,6 @@ namespace IranianSMSGateways.Services
         Task<ResponseSMS> SendSchedule(SendScheduleDTO dto);
         Task<ResponseSMS> SendMultiple(SendMultipleDTO dto);
         Task<ResponseSMS> GetCredit(GetCreditDTO dto);
+        Task<ResponseSMS> GetUserNumbers(GetUserNumbersDTO dto);
     }
 }
